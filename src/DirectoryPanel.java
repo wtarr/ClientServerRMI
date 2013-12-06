@@ -19,12 +19,12 @@ public class DirectoryPanel extends javax.swing.JPanel {
 
     public DirectoryPanel() {
         initComponents();
-        //client = Client.getInstance();
+        client = Client.getInstance();
         lblSelectedFile.setText("None");
     }
 
     public void refreshFileListing() {
-        //files = client.fetchDirectoryListing();
+        files = client.fetchDirectoryListing();
         jlistFiles.removeAll();
         jlistFiles.setModel(files);
     }
@@ -121,7 +121,7 @@ public class DirectoryPanel extends javax.swing.JPanel {
     private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadActionPerformed
 
         JFileChooser jfc = new JFileChooser();
-        jfc.setDialogTitle("Select file to upload");
+        jfc.setDialogTitle("Select file to testUpload");
         int returnval = jfc.showOpenDialog(this);
         if (returnval == JFileChooser.APPROVE_OPTION) {
             client.upload(jfc.getSelectedFile());
