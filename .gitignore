@@ -1,4 +1,7 @@
 *
 !.gitignore
+!src/MessageLogger/
+!src/MessageLogger/*
 !src/
 !src/*
+
