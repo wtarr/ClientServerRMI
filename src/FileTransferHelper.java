@@ -1,3 +1,6 @@
+import MessageLogger.Observer;
+import MessageLogger.Subject;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,7 +16,14 @@ import java.rmi.RemoteException;
  */
 public class FileTransferHelper {
 
-    public static boolean receiveHelper(File destination, byte[] file)
+    private Subject messageLogger;
+
+    public FileTransferHelper(Subject messageLogger)
+    {
+        this.messageLogger = messageLogger;
+    }
+
+    public boolean receiveHelper(File destination, byte[] file)
     {
         FileOutputStream fos = null;
         try {
@@ -33,7 +43,7 @@ public class FileTransferHelper {
         return false;
     }
 
-    public static byte[] sendHelper(File file)
+    public byte[] sendHelper(File file)
     {
         byte[] buffy = new byte[0];
 
@@ -58,5 +68,4 @@ public class FileTransferHelper {
 
         return buffy;
     }
-
 }

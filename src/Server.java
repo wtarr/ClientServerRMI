@@ -2,18 +2,32 @@ import java.io.File;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import MessageLogger.*;
 
-public class Server {
+public class Server implements Observer {
     public static ArrayList<Client> clients;
     public static File root;
+    private static Server uniqueInstance;
+    private Subject messageLogger;
 
 
+    private Server(Subject messageLogger) {
 
-
-
-    public Server() {
+        this.messageLogger = messageLogger;
+        messageLogger.registerObserver(this);
         clients = new ArrayList<Client>();
         initiateServer();
+
+    }
+
+    public static Server getInstance(Subject messagesLogged)
+    {
+        if (uniqueInstance == null)
+        {
+            uniqueInstance = new Server(messagesLogged);
+        }
+
+        return uniqueInstance;
     }
 
     private void initiateServer() {
@@ -24,18 +38,19 @@ public class Server {
             buildDirectoryListing();
 
             LocateRegistry.createRegistry(1099);
-            Naming.rebind("rmi://localhost/FTP", new FTP());
-            System.out.println("The FTP server is now ready");
+            Naming.rebind("rmi://localhost/FTP", new FTP(messageLogger));
+
+            messageLogger.setMessage("The FTP server is now ready");
 
         } catch (Exception e) {
-            System.out.println(e);
+            messageLogger.setMessage(e.toString());
         }
 
     }
 
     private void initialiseFolder(File file)
     {
-        System.out.println("Checking for root folder...");
+        messageLogger.setMessage("Checking for root folder");
 
         if (!file.exists())
         {
@@ -43,12 +58,12 @@ public class Server {
 
             if (mkdir)
             {
-                System.out.println("Root folder created.");
+                messageLogger.setMessage("Root folder created.");
             }
         }
         else
         {
-            System.out.println("Folder found.");
+            messageLogger.setMessage("Folder found.");
         }
 
     }
@@ -69,7 +84,9 @@ public class Server {
         }
     }
 
-    public static void main(String[] args) {
-        Server server = new Server();
+    @Override
+    public void update(String msg) {
+        //To change body of implemented methods use File | Settings | File Templates.
+        System.out.println(msg);
     }
 }

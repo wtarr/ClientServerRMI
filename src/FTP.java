@@ -1,3 +1,7 @@
+import MessageLogger.MessageLogger;
+import MessageLogger.Observer;
+import MessageLogger.Subject;
+
 import java.io.File;
 import java.rmi.*;
 import java.rmi.server.*;
@@ -7,9 +11,12 @@ import java.rmi.server.*;
  */
 public class FTP extends UnicastRemoteObject implements IFTP {
 
+    public Subject messageLogger;
+    private FileTransferHelper fileTransferHelper;
 
-    public FTP() throws RemoteException {
-
+    public FTP(Subject messageLogger) throws RemoteException {
+        fileTransferHelper = new FileTransferHelper(messageLogger);
+        this.messageLogger = messageLogger;
     }
 
 
@@ -19,18 +26,18 @@ public class FTP extends UnicastRemoteObject implements IFTP {
         File dir = new File(Server.root, username.toLowerCase());
         File file = new File(dir, filename);
 
-        return FileTransferHelper.sendHelper(file);
+        return fileTransferHelper.sendHelper(file);
     }
 
     public synchronized boolean upload(String username, String filename, byte[] file) throws RemoteException {
 
-        System.out.println("Receiving " + filename + " from " + username);
+        messageLogger.setMessage("Receiving " + filename + " from " + username);
 
         File clientFolder = new File(Server.root, username.toLowerCase());
 
         File clientFile = new File(clientFolder, filename);
 
-        boolean successful = FileTransferHelper.receiveHelper(clientFile, file);
+        boolean successful = fileTransferHelper.receiveHelper(clientFile, file);
 
         if (successful) {
             for (Client c : Server.clients) {
@@ -53,6 +60,7 @@ public class FTP extends UnicastRemoteObject implements IFTP {
         for (Client ele : Server.clients) {
             if (ele.getOwner().equals(username.toLowerCase())) {
                 ele.setOnline(true);
+                messageLogger.setMessage(username + " logged on");
                 result = true;
             }
         }
@@ -68,6 +76,7 @@ public class FTP extends UnicastRemoteObject implements IFTP {
         for (Client ele : Server.clients) {
             if (ele.getOwner().equals(username.toLowerCase())) {
                 ele.setOnline(false);
+                messageLogger.setMessage(username + " logged off");
                 result = true;
             }
         }
@@ -100,7 +109,7 @@ public class FTP extends UnicastRemoteObject implements IFTP {
     @Override
     public synchronized String fetchDirectoryListing(String username) throws RemoteException {
 
-        System.out.println("Request for listing recieved from " + username);
+        messageLogger.setMessage("Request for listing received from " + username);
         for (Client c : Server.clients) {
             if (c.getOwner().equals(username.toLowerCase())) {
                 StringBuilder sb = new StringBuilder();
@@ -110,7 +119,7 @@ public class FTP extends UnicastRemoteObject implements IFTP {
                     sb.append(";");
                 }
 
-                System.out.println(sb.toString());
+                //messageLogger.setMessage(sb.toString());
 
                 return sb.toString();
             }
@@ -120,4 +129,6 @@ public class FTP extends UnicastRemoteObject implements IFTP {
         return "";
 
     }
+
+
 }
