@@ -27,11 +27,11 @@ public class Client {
         this.owner = owner;
     }
 
-    public Boolean getOnline() {
+    public Boolean getOnlineStatus() {
         return online;
     }
 
-    public void setOnline(Boolean online) {
+    public void setOnlineStatus(Boolean online) {
         this.online = online;
     }
 }

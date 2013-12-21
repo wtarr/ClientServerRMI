@@ -1,6 +1,9 @@
 package MessageLogger;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created with IntelliJ IDEA.
@@ -49,7 +52,10 @@ public class MessageLogger implements Subject {
 
     public void setMessage(String msg)
     {
-        message = msg;
+        Date dt = new Date();
+        DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
+        message = df.format(dt)+ " -> " + msg;
         messageChanged();
     }
 

@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.InputStream;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
@@ -9,13 +10,14 @@ public class Server implements Observer {
     public static File root;
     private static Server uniqueInstance;
     private Subject messageLogger;
+    private SystemInformation systemInformation;
 
 
     private Server(Subject messageLogger) {
 
         this.messageLogger = messageLogger;
         messageLogger.registerObserver(this);
-        clients = new ArrayList<Client>();
+        clients = new ArrayList<>();
         initiateServer();
 
     }
@@ -33,14 +35,17 @@ public class Server implements Observer {
     private void initiateServer() {
         try {
 
+            InputStream in = this.getClass().getResourceAsStream("config/systeminfo.xml");
+            systemInformation = new SystemInformation(in);
+
             root = new File("ROOT");
             initialiseFolder(root);
             buildDirectoryListing();
 
-            LocateRegistry.createRegistry(1099);
-            Naming.rebind("rmi://localhost/FTP", new FTP(messageLogger));
+            LocateRegistry.createRegistry(systemInformation.getPort());
+            Naming.rebind("rmi://" + systemInformation.getAddress() + "/FTP_Servant", new FTP_Servant(messageLogger));
 
-            messageLogger.setMessage("The FTP server is now ready");
+            messageLogger.setMessage("The FTP_Servant server is now ready");
 
         } catch (Exception e) {
             messageLogger.setMessage(e.toString());
@@ -86,7 +91,7 @@ public class Server implements Observer {
 
     @Override
     public void update(String msg) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // Receive and display messages from the message logger
         System.out.println(msg);
     }
 }

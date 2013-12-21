@@ -3,7 +3,8 @@
  * @author William
  */
 
-import MessageLogger.*;
+import MessageLogger.MessageLogger;
+import MessageLogger.Observer;
 
 import javax.swing.*;
 
@@ -11,7 +12,6 @@ public class ServerGUI extends javax.swing.JFrame implements Observer {
 
     private Server server;
     private MessageLogger ml;
-    private Subject messagelogged;
 
     /**
      * Creates new form ServerGUI
@@ -52,7 +52,7 @@ public class ServerGUI extends javax.swing.JFrame implements Observer {
         jLabel1.setText("Console");
 
         jLabel2.setFont(new java.awt.Font("Times New Roman", 1, 24)); // NOI18N
-        jLabel2.setText("FTP Server V2.0");
+        jLabel2.setText("FTP_Servant Server V2.0");
 
         jButtonStop.setText("Stop !");
         jButtonStop.addActionListener(new java.awt.event.ActionListener() {
@@ -109,6 +109,11 @@ public class ServerGUI extends javax.swing.JFrame implements Observer {
 
     private void jButtonStopActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
+        int res = JOptionPane.showConfirmDialog(null, "Are you sure?", "Confirm", JOptionPane.YES_NO_OPTION);
+        if (res == JOptionPane.YES_OPTION)
+        {
+            System.exit(0);
+        }
     }
 
     /**
@@ -158,7 +163,7 @@ public class ServerGUI extends javax.swing.JFrame implements Observer {
 
     @Override
     public void update(String msg) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // Receive and display messages from the message logger
         jTextAreaConsoleArea.append(msg + "\n");
     }
     // End of variables declaration                   
