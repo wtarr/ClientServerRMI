@@ -1,7 +1,9 @@
 
 import java.awt.CardLayout;
+import javax.security.auth.Subject;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
 
 public class JoinPanel extends JPanel {
 

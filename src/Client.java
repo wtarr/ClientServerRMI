@@ -1,13 +1,12 @@
-import javax.swing.JOptionPane;
-import java.io.*;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
+import FTP_Helpers.*;
+import MessageLogger.Subject;
+
+import javax.swing.*;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import javax.swing.DefaultListModel;
-import javax.swing.ListModel;
 
 public class Client
 {
@@ -15,10 +14,13 @@ public class Client
     private SystemInformation sysInfo;
     private IFTP ftp;
     private static Client uniqueInstance;
+    private boolean connected = false;
+    private boolean loggedIn = false;
+    private Subject messageLogger;
 
     private Client()
     {
-        connect();
+
     }
 
     public static Client getInstance() {
@@ -29,19 +31,50 @@ public class Client
         return uniqueInstance;
     }
 
+    public boolean isConnected()
+    {
+        return connected;
+    }
+
+    public void setUsername(String username) {
+        this.username = username.toLowerCase();
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setMessageLogger(Subject messageLogger)
+    {
+        this.messageLogger = messageLogger;
+    }
+
     public boolean connect()
     {
 
         try {
-            File f = new File(getClass().getResource("config/systeminfo.xml").toURI());
-            sysInfo = new SystemInformation(f);
-            ftp = (IFTP) Naming.lookup("rmi://" + sysInfo.getAddress() + ":" + sysInfo.getPort() + "/FTP");
+            try
+            {
+                // Try to access external config first (only if running byte code)
+                URL url = this.getClass().getResource("config/systeminfo.xml");
+                File file = new File(url.toURI());
+                sysInfo = new SystemInformation(file, messageLogger);
+            }
+            catch (Exception e)
+            {
+                // other wise go for the one compiled in the JAR  (if running directly from JAR)
+                InputStream in = this.getClass().getResourceAsStream("config/systeminfo.xml");
+                sysInfo = new SystemInformation(in, messageLogger);
+            }
+
+            ftp = (IFTP) Naming.lookup("rmi://" + sysInfo.getAddress() + ":" + sysInfo.getPort() + "/FTP_Servant");
+            return true;
 
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            messageLogger.setMessage("Error connecting to server :\n\n" + e.toString());
         }
 
-        return true;
+        return false;
     }
 
     public boolean createNew(String txtUserName)
@@ -51,7 +84,7 @@ public class Client
         try {
             return ftp.createnew(txtUserName);
         } catch (RemoteException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            messageLogger.setMessage("Error user creating new user:\n\n" + e.toString());
         }
 
         return false;
@@ -62,11 +95,12 @@ public class Client
         username = txtUserName.toLowerCase();
 
         try {
-            return ftp.login(txtUserName);
+            loggedIn = ftp.login(txtUserName);
+            return loggedIn;
         }
         catch (RemoteException e)
         {
-            e.printStackTrace();
+            messageLogger.setMessage("Error logging in :\n\n" + e.toString());
         }
 
         return false;
@@ -75,7 +109,10 @@ public class Client
     public boolean logout()
     {
         try {
-            return ftp.logout(username);
+            if (loggedIn)
+                return ftp.logout(username);
+            else
+                System.exit(0);
         } catch (RemoteException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -89,7 +126,7 @@ public class Client
         try {
             return ftp.upload(username, file.getName(), FileTransferHelper.sendHelper(file));
         } catch (RemoteException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+           messageLogger.setMessage("Error during upload :\n\n" + e.toString());
         }
 
         return false;
@@ -106,15 +143,14 @@ public class Client
        }
        catch (RemoteException e)
        {
-                     e.printStackTrace();
-
+           messageLogger.setMessage("Error during download : \n\n" + e.toString());
        }
         return false;
     }
 
     public DefaultListModel<String> fetchDirectoryListing()
     {
-        DefaultListModel<String> list = new DefaultListModel<String>();
+        DefaultListModel<String> list = new DefaultListModel<>();
 
         try {
             String message = ftp.fetchDirectoryListing(username);
@@ -128,7 +164,7 @@ public class Client
 
 
         } catch (RemoteException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            messageLogger.setMessage("Error fetching directory listing : \n\n" + e.toString());
         }
 
         return new DefaultListModel<>();
@@ -138,11 +174,6 @@ public class Client
 
     }
 
-    public String getUsername() {
-        return username;
-    }
 
-    public void setUsername(String username) {
-        this.username = username.toLowerCase();
-    }
+
 }

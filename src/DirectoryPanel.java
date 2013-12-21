@@ -153,7 +153,8 @@ public class DirectoryPanel extends javax.swing.JPanel {
 
     private void jlistFilesValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jlistFilesValueChanged
         // TODO add your handling code here:
-        lblSelectedFile.setText(jlistFiles.getSelectedValue().toString());
+        if (jlistFiles.getModel().getSize() > 0)
+            lblSelectedFile.setText(jlistFiles.getSelectedValue().toString());
     }//GEN-LAST:event_jlistFilesValueChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

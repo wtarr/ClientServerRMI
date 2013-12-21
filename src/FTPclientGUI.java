@@ -1,3 +1,6 @@
+import MessageLogger.MessageLogger;
+import MessageLogger.Observer;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -6,7 +9,7 @@ import java.util.ArrayList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class FTPclientGUI extends JFrame implements ActionListener, WindowListener {
+public class FTPclientGUI extends JFrame implements ActionListener, WindowListener, Observer {
 
     private JPanel panel_main,                                  
             cardPanel;
@@ -21,9 +24,22 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
     private String serverName = "";
     private Container cPane;
     private Client client;
+    private MessageLogger messageLogger;
 
     public FTPclientGUI() {
+        messageLogger = new MessageLogger();
+        messageLogger.registerObserver(this); // register for message updates
+
         client = Client.getInstance();
+        client.setMessageLogger(messageLogger);
+        client.connect();
+
+        if (!client.isConnected())
+        {
+            JOptionPane.showMessageDialog(null, "Server is not available.");
+            JOptionPane.showMessageDialog(null, "Check that server is running, then please try again");
+            System.exit(0);
+        }
         setTitle("FTP - Client");
         setSize(400, 300);
         setResizable(false);
@@ -75,7 +91,7 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
     private void createFileMenu() {
         JMenuItem item;
         fileMenu = new JMenu("File");
-        item = new JMenuItem("Log off");
+        item = new JMenuItem("Log off / Exit");
         item.addActionListener(this);
         fileMenu.add(item);
     }
@@ -86,7 +102,7 @@ public class FTPclientGUI extends JFrame implements ActionListener, WindowListen
 
         actionName = actionEvent.getActionCommand();
 
-        if (actionName.equals("Log off")) {
+        if (actionName.equals("Log off / Exit")) {
             boolean success = client.logout();
             if (success)
                 JOptionPane.showMessageDialog(null, "Successfully logged off, Goodbye");
@@ -157,5 +173,10 @@ try {
         FTPclientGUI f = new FTPclientGUI();
         f.setVisible(true);
 
+    }
+
+    @Override
+    public void update(String s) {
+        JOptionPane.showMessageDialog(null, s);
     }
 }
