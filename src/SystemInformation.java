@@ -4,6 +4,7 @@
  * This will "hide" but also allow the address and port details be updated if necessary
  */
 
+import MessageLogger.Subject;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -13,6 +14,8 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -20,6 +23,9 @@ import java.io.InputStream;
 public class SystemInformation {
     
     private String address;
+    private Subject messageLogger;
+    private String defaultHost = "localhost";
+    private int defaultport = 1099;
 
     public String getAddress() {
         return address;
@@ -37,26 +43,47 @@ public class SystemInformation {
         this.port = port;
     }
     private int port;
-        
-    public SystemInformation(InputStream in) {
-        
+
+    public SystemInformation(InputStream in, Subject messagelogger) {
+
+        this.messageLogger = messagelogger;
         FetchDetailsFromXML(in);
     }
+
+    public SystemInformation(File file, Subject messageLogger)
+    {
+        try
+        {
+            this.messageLogger = messageLogger;
+            InputStream in = new FileInputStream(file);
+            FetchDetailsFromXML(in);
+        }
+        catch (Exception e)
+        {
+             messageLogger.setMessage("Error converting config file to inputstream - reverting to default localhost:1099");
+            setAddress(defaultHost);
+            setPort(defaultport);
+        }
+
+        //FetchDetailsFromXML(file);
+    }
+
+
     
     private void FetchDetailsFromXML(InputStream in)
     {        
         // Modified version from - http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser/
         try 
         {
-            //File fXMLfile = file;
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(in);
-            
+            Document doc;
+            Node node;
+
+            doc = dBuilder.parse(in);
             doc.getDocumentElement().normalize();
-            
-            Node node = doc.getElementsByTagName("serverinfo").item(0);
-            
+            node = doc.getElementsByTagName("hostinfo").item(0);
+
             if (node.getNodeType() == Node.ELEMENT_NODE)
             {
                 Element element = (Element)node;                
@@ -66,7 +93,10 @@ public class SystemInformation {
         } 
         catch (ParserConfigurationException | SAXException | IOException | DOMException e) 
         {
-            e.printStackTrace();
+            //e.printStackTrace();
+            messageLogger.setMessage("Error parsing XML document - reverting to default localhost:1099");
+            setAddress(defaultHost);
+            setPort(defaultport);
         }
     }
     

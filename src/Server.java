@@ -1,5 +1,7 @@
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
@@ -35,8 +37,19 @@ public class Server implements Observer {
     private void initiateServer() {
         try {
 
-            InputStream in = this.getClass().getResourceAsStream("config/systeminfo.xml");
-            systemInformation = new SystemInformation(in);
+            try
+            {
+                // Try to access external config first (only if running byte code)
+                URL url = this.getClass().getResource("config/systeminfo.xml");
+                File file = new File(url.toURI());
+                systemInformation = new SystemInformation(file, messageLogger);
+            }
+            catch (Exception e)
+            {
+                // other wise go for the one compiled in the JAR  (if running directly from JAR)
+                InputStream in = this.getClass().getResourceAsStream("config/systeminfo.xml");
+                systemInformation = new SystemInformation(in, messageLogger);
+            }
 
             root = new File("ROOT");
             initialiseFolder(root);
