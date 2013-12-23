@@ -5,10 +5,12 @@ import java.net.URL;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.util.List;
+
 import MessageLogger.*;
 
 public class Server implements Observer {
-    public static ArrayList<Client> clients;
+    public static List<Client> clients;
     public static File root;
     private static Server uniqueInstance;
     private Subject messageLogger;
@@ -40,15 +42,17 @@ public class Server implements Observer {
             try
             {
                 // Try to access external config first (only if running byte code)
-                URL url = this.getClass().getResource("config/systeminfo.xml");
+                URL url = this.getClass().getResource("/config/systeminfo.xml");
                 File file = new File(url.toURI());
                 systemInformation = new SystemInformation(file, messageLogger);
+                messageLogger.setMessage("using external configuration file");
             }
             catch (Exception e)
             {
                 // other wise go for the one compiled in the JAR  (if running directly from JAR)
                 InputStream in = this.getClass().getResourceAsStream("config/systeminfo.xml");
                 systemInformation = new SystemInformation(in, messageLogger);
+                messageLogger.setMessage("using internal configuration file");
             }
 
             root = new File("ROOT");

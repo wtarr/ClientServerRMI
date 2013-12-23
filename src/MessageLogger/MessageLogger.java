@@ -13,12 +13,12 @@ import java.util.Date;
  * To change this template use File | Settings | File Templates.
  */
 public class MessageLogger implements Subject {
-    private ArrayList observers;
+    private ArrayList<Observer> observers;
     private String message;
 
     public MessageLogger()
     {
-        observers = new ArrayList();
+        observers = new ArrayList<Observer>();
     }
 
 
@@ -40,7 +40,7 @@ public class MessageLogger implements Subject {
     public void notifyObservers() {
         for ( int i = 0 ; i < observers.size(); i++)
         {
-             Observer observer = (Observer)observers.get(i);
+             Observer observer = observers.get(i);
              observer.update(message);
         }
     }

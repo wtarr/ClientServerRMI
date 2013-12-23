@@ -57,9 +57,9 @@ public class FTP_Servant extends UnicastRemoteObject implements IFTP {
 
         boolean result = false;
 
-        for (Client ele : Server.clients) {
-            if (ele.getOwner().equals(username.toLowerCase())) {
-                ele.setOnlineStatus(true);
+        for (Client client : Server.clients) {
+            if (client.getOwner().equals(username.toLowerCase())) {
+                client.setOnlineStatus(true);
                 messageLogger.setMessage(username + " logged on");
                 result = true;
             }
@@ -73,9 +73,9 @@ public class FTP_Servant extends UnicastRemoteObject implements IFTP {
 
         boolean result = false;
 
-        for (Client ele : Server.clients) {
-            if (ele.getOwner().equals(username.toLowerCase())) {
-                ele.setOnlineStatus(false);
+        for (Client client : Server.clients) {
+            if (client.getOwner().equals(username.toLowerCase())) {
+                client.setOnlineStatus(false);
                 messageLogger.setMessage(username + " logged off");
                 result = true;
             }
@@ -103,7 +103,7 @@ public class FTP_Servant extends UnicastRemoteObject implements IFTP {
         File newuser = new File(Server.root, username.toLowerCase());
         newuser.mkdir();
 
-        return result;  //To change body of implemented methods use File | Settings | File Templates.
+        return result;
     }
 
     @Override
@@ -119,15 +119,10 @@ public class FTP_Servant extends UnicastRemoteObject implements IFTP {
                     sb.append(";");
                 }
 
-                //messageLogger.setMessage(sb.toString());
-
                 return sb.toString();
             }
-
         }
-
         return "";
-
     }
 
 
