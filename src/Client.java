@@ -68,7 +68,8 @@ public class Client
             }
 
             ftp = (IFTP) Naming.lookup("rmi://" + sysInfo.getAddress() + ":" + sysInfo.getPort() + "/FTP_Servant");
-            return true;
+            connected = true;
+            return connected;
 
         } catch (Exception e) {
             messageLogger.setMessage("Error connecting to server :\n\n" + e.toString());
