@@ -1,3 +1,4 @@
-/FTPClient/nbproject/private/
-/FTPClient/build/
-/FTPClient/dist/
+*
+!.gitignore
+!src/
+!src/*
